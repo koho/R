@@ -212,3 +212,72 @@ WHERE NOT EXISTS
 			(SELECT * 
 				FROM SC
 				WHERE SC.SNO = Student.SNO AND SC.CNO = Course.CNO));
+				
+
+CREATE TABLE Student(
+	Sno INT PRIMARY KEY,
+	Sname CHAR(8) UNIQUE,
+	Ssex CHAR(2), 
+	Sage INT,
+	Sdept CHAR(20));
+CREATE TABLE Course(
+	Cno INT PRIMARY KEY,
+	Cname CHAR(20) NOT NULL,
+	Cpno INT,
+	Ccredit INT,
+	FOREIGN KEY (Cpno) REFERENCES Course(Cno));
+CREATE TABLE SC(
+	Sno INT,
+	Cno INT,
+	Grade INT,
+	FOREIGN KEY(Sno) REFERENCES Student(Sno),
+	FOREIGN KEY(Cno) REFERENCES Course(Cno));
+
+INSERT INTO Student VALUES(201215121,'李勇','男', 20, 'CS');
+INSERT INTO Student VALUES(201215122,'刘晨','女', 19, 'CS');
+INSERT INTO Student VALUES(201215123,'王敏','女', 18, 'MA');
+INSERT INTO Student VALUES(201215125,'张立','男', 19, 'IS');
+
+/*
+INSERT INTO Course VALUES(1, '据库', 5, 4);
+INSERT INTO Course VALUES(2, '数学', NULL, 2);
+INSERT INTO Course VALUES(3, '信息系统', 1, 4);
+INSERT INTO Course VALUES(4, '操作系统', 6, 3);
+INSERT INTO Course VALUES(5, '数据结构', 7, 4);
+INSERT INTO Course VALUES(6, '数据处理', NULL, 2);
+INSERT INTO Course VALUES(7, 'PASCAL语言', 6, 4);
+*/
+
+INSERT INTO Course (Cno, Cname,Ccredit) VALUES(1,'数据库', 4);
+INSERT INTO Course (Cno, Cname,Ccredit) VALUES(2,'数学', 2);
+INSERT INTO Course (Cno, Cname,Ccredit) VALUES(3,'信息系统', 4);
+INSERT INTO Course (Cno, Cname,Ccredit) VALUES(4,'操作系统', 3);
+INSERT INTO Course (Cno, Cname,Ccredit) VALUES(5,'数据结构', 4);
+INSERT INTO Course (Cno, Cname,Ccredit) VALUES(6,'数据处理', 2);
+INSERT INTO Course (Cno, Cname,Ccredit) VALUES(7,'PASCAL语言', 4);
+
+UPDATE Course SET Cpno = 5 WHERE Cno = 1;
+UPDATE Course SET Cpno = NULL WHERE Cno = 2;
+UPDATE Course SET Cpno = 1 WHERE Cno = 3;
+UPDATE Course SET Cpno = 6 WHERE Cno = 4;
+UPDATE Course SET Cpno = 7 WHERE Cno = 5;
+UPDATE Course SET Cpno = NULL WHERE Cno = 6;
+UPDATE Course SET Cpno = 6 WHERE Cno = 7;
+
+INSERT INTO SC VALUES(201215121, 1, 92);
+INSERT INTO SC VALUES(201215121, 2, 85);
+INSERT INTO SC VALUES(201215121, 3, 88);
+INSERT INTO SC VALUES(201215122, 2, 90);
+INSERT INTO SC VALUES(201215122, 3, 80);
+
+SELECT DISTINCT Sno
+FROM SC SCX
+WHERE NOT EXISTS
+	(SELECT * 
+		FROM SC SCY
+		WHERE SCY.Sno = 201215122 AND
+			NOT EXISTS
+				(SELECT *
+					FROM SC SCZ
+					WHERE SCZ.Sno = SCX.Sno AND
+					SCZ.Cno = SCY.Cno));
