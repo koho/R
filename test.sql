@@ -38,55 +38,231 @@ CREATE UNIQUE INDEX coucno ON Course(CNO);
 DROP INDEX stusno;
 DROP INDEX coucno;
 
-CREATE VIEW CS_STUDENT AS SELECT *
+CREATE VIEW CS_STUDENT 
+AS SELECT *
 	FROM Student
 	WHERE DEPTNO =
 			(SELECT DEPTNO
 				FROM Dept
-				WHERE DNAME = '计算机科学与技术')
-	WITH CHECK OPTION;
+				WHERE DNAME = '计算机科学与技术');
+
 
 DROP VIEW CS_STUDENT;
 
-INSERT INTO Student VALUES(1001, '张天', '男', 20, 10);
-INSERT INTO Student VALUES(1002, '李兰', '女', 21, 10);
-INSERT INTO Student VALUES(1003, '陈铭', '男', 21, 10);
-INSERT INTO Student VALUES(1004, '李茜', '女', 21, 20);
-INSERT INTO Student VALUES(1005, '马朝阳', '男', 22, 20);
 
+1001, '张天', '男', 20, 10
+1002, '李兰', '女', 21, 10
+1003, '陈铭', '男', 21, 10
+1004, '李茜', '女', 21, 20
+1005, '马朝阳', '男', 22, 20
+INSERT INTO Student(SNO, SNAME, SEX, AGE, DEPTNO) VALUES(1001, '张天', '男', 20, 10);
+INSERT INTO Student(SNO, SNAME, SEX, AGE, DEPTNO) VALUES(1002, '李兰', '女', 21, 10);
+INSERT INTO Student(SNO, SNAME, SEX, AGE, DEPTNO) VALUES(1003, '陈铭', '男', 21, 10);
+INSERT INTO Student(SNO, SNAME, SEX, AGE, DEPTNO) VALUES(1004, '李茜', '女', 21, 20);
+INSERT INTO Student(SNO, SNAME, SEX, AGE, DEPTNO) VALUES(1005, '马朝阳', '男', 22, 20);
+
+1, '数据结构', 101, 4
+2, '数据库', 102, 4
+3, '离散数学', 103, 4
+4, 'C语言程序设计', 101, 2
 INSERT INTO Course VALUES(1, '数据结构', 101, 4);
 INSERT INTO Course VALUES(2, '数据库', 102, 4);
 INSERT INTO Course VALUES(3, '离散数学', 103, 4);
 INSERT INTO Course VALUES(4, 'C语言程序设计', 101, 2);
-INSERT INTO Course VALUES (1,'数据结构', 101, 4);
-INSERT INTO Course VALUES (2,'数据库', 102, 4);
-INSERT INTO Course VALUES (3,'离散数学', 103, 4);
-INSERT INTO Course VALUES (4,'C语言程序设计', 101, 2);
 
+1001,1,80
+1001,2,85
+1001,3,78
+1002,1,78
+1002,2,82
+1002,3,86
+1003,1,92
+1003,3,90
+1004,1,87
+1004,4,90
+1005,1,85
+1005,4,92
 INSERT INTO SC VALUES (1001,1,80);
 INSERT INTO SC VALUES (1001,2,85);
 INSERT INTO SC VALUES (1001,3,78);
 INSERT INTO SC VALUES (1002,1,78);
 INSERT INTO SC VALUES (1002,2,82);
 INSERT INTO SC VALUES (1002,3,86);
-INSERT INTO SC VALUES (1003,1,82);
+INSERT INTO SC VALUES (1003,1,92);
 INSERT INTO SC VALUES (1003,3,90);
 INSERT INTO SC VALUES (1004,1,87);
 INSERT INTO SC VALUES (1004,4,90);
 INSERT INTO SC VALUES (1005,1,85);
 INSERT INTO SC VALUES (1005,4,92);
 
+101,'张星', 10
+102,'李珊', 10
+103,'赵天应', 10
+104,'刘田', 20
 INSERT INTO Teacher VALUES (101,'张星', 10);
 INSERT INTO Teacher VALUES (102,'李珊', 10);
 INSERT INTO Teacher VALUES (103,'赵天应', 10);
 INSERT INTO Teacher VALUES (104,'刘田', 20);
 
+
+10,'计算机科学与技术'
+20,'信息'
 INSERT INTO Dept VALUES (10,'计算机科学与技术');
 INSERT INTO Dept VALUES (20,'信息');
 
+/*修改数据*/
+UPDATE SC
+	SET GRADE = GRADE + 2 
+	WHERE CNO IN
+		(SELECT CNO
+			FROM Course, Teacher
+			WHERE Course.TNO = Teacher.TNO
+			AND Teacher.TNAME = '张星');
+
 /*删除数据*/
-DELETE FROM SC WHERE SNO IN 
+DELETE FROM SC
+WHERE SNO IN
 	(SELECT SNO
 	FROM Student
 	WHERE SNAME = '马朝阳'
-)；
+);
+
+
+/*查询操作*/
+/*单表查询*/
+
+/*查询所有学生的信息*/
+SELECT * 
+FROM Student;
+
+/*查询所有女生的姓名*/
+SELECT SNAME
+FROM Student
+WHERE SEX = '女';
+
+/*查询成绩在80～89分之间的所有学生的选课记录，查询结果按照成绩的降序排列。*/
+SELECT * 
+FROM SC
+WHERE GRADE >= 80 AND GRADE <= 89
+ORDER BY GRADE DESC;
+
+/*查询各个系的学生人数*/
+SELECT DEPTNO, count(SNO)
+FROM Student
+GROUP BY DEPTNO;
+
+/*连接查询*/
+/*查询信息系年龄在21岁以下的女生的姓名及年龄*/
+SELECT SNAME, AGE
+FROM Student, Dept
+WHERE Student.DEPTNO = Dept.DEPTNO
+	AND Dept.DNAME = '信息'
+	AND AGE <= 21
+	AND SEX = '女';
+
+/*嵌套查询*/
+/*查询选修课总学分在10学分以下的学生的姓名*/
+SELECT SNAME
+FROM Student
+WHERE SNO IN
+	(SELECT SNO
+		FROM SC, Course
+		WHERE SC.CNO = Course.CNO
+		GROUP BY SNO
+		HAVING SUM(CREDIT) < 10);
+
+
+
+
+/*查询各门课程的最高成绩的学生的姓名及其成绩*/
+
+SELECT CNO, SNAME, GRADE
+FROM Student, SC SCX
+WHERE Student.SNO = SCX.SNO AND SCX.GRADE IN 
+	(SELECT MAX(GRADE)
+		FROM SC SCY
+		WHERE SCX.CNO = SCY.CNO
+		GROUP BY CNO)
+ORDER BY CNO;
+
+/*查询选修了1001号学生所选修的全部课程的学生的学号*/
+SELECT SNO
+FROM Student
+WHERE NOT EXISTS
+	(SELECT *
+		FROM SC SCX
+		WHERE SCX.SNO = 1001 AND NOT EXISTS
+			(SELECT *
+				FROM SC SCY
+				WHERE SCY.SNO = Student.SNO AND SCY.CNO = SCX.CNO));
+
+
+
+/*查询选修了张星老师所开设的全部课程的学生的姓名*/
+
+SELECT SNAME
+FROM Student
+WHERE NOT EXISTS
+	(SELECT *
+		FROM Course
+		WHERE TNO IN 
+		(SELECT TNO
+		FROM Teacher
+		WHERE TNAME = '张星') AND NOT EXISTS
+			(SELECT * 
+				FROM SC
+				WHERE SC.SNO = Student.SNO AND SC.CNO = Course.CNO));
+
+CREATE SCHEMA ST;
+CREATE TABLE Student(
+	Sno CHAR(9) PRIMARY KEY,
+	Sname CHAR(20) UNIQUE,
+	Ssex CHAR(2),
+	Sage SMALLINT,
+	Sdept CHAR(20)
+);
+CREATE TABLE Course(
+	Cno CHAR(4) PRIMARY KEY,
+	Cname CHAR(40) NOT NULL,
+	Cpno CHAR(4),
+	Ccredit SMALLINT,
+	FOREIGN KEY (Cpno) REFERENCES Course(Cno)
+);
+CREATE TABLE SC(
+	Sno CHAR(9),
+	Cno CHAR(4),
+	Grade SMALLINT,
+	PRIMARY KEY(Sno, Cno),
+	FOREIGN KEY (Sno) REFERENCES Student(Sno),
+	FOREIGN KEY (Cno) REFERENCES Course(Cno)
+);
+INSERT INTO Student VALUES(201215121,'李勇','男', 20, 'CS');
+INSERT INTO Student VALUES(201215122,'刘晨','女', 19, 'CS');
+INSERT INTO Student VALUES(201215123,'王敏','女', 18, 'MA');
+INSERT INTO Student VALUES(201215125,'张立','男', 19, 'IS');
+
+INSERT INTO Course VALUES(2,'数学', NULL, 2);
+INSERT INTO Course VALUES(6,'数据处理', NULL, 2);
+INSERT INTO Course VALUES(7,'PASCAL语言', 6, 4);
+INSERT INTO Course VALUES(4,'操作系统', 6, 3);
+INSERT INTO Course VALUES(5,'数据结构', 7, 4);
+INSERT INTO Course VALUES(1,'数据库', 5, 4);
+INSERT INTO Course VALUES(3,'信息系统', 1, 4);
+
+INSERT INTO SC VALUES(201215121, 1, 92);
+INSERT INTO SC VALUES(201215121, 2, 85);
+INSERT INTO SC VALUES(201215121, 3, 88);
+INSERT INTO SC VALUES(201215122, 2, 90);
+INSERT INTO SC VALUES(201215122, 3, 80);
+
+SELECT DISTINCT Sno
+FROM SC SCX
+WHERE NOT EXISTS
+	(SELECT * 
+		FROM SC SCY
+		WHERE SCY.Sno = '201215122' AND
+			NOT EXISTS
+				(SELECT *
+					FROM SC SCZ
+					WHERE SCZ.Sno = SCX.Sno AND
+					SCZ.Cno = SCY.Cno));
