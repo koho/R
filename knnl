@@ -1,5 +1,5 @@
 library(class)
-n = 3
+n = 100
 redwine = read.csv("winequality-red.csv", sep = ';')
 nrowwine = nrow(redwine)
 ncolwine = ncol(redwine)
@@ -47,7 +47,9 @@ for (tr in tp) {
 }
 rownames(tp_eachcorrects) = tp
 rownames(tp_allcorrects) = tp
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 
 plot(rownames(tp_allcorrects), apply(tp_allcorrects, 1, mean), type = 'b', xlab = '训练比例', ylab = '平均总正确比例')
 plot(apply(tp_allcorrects, 2, mean), type = 'b', xlab = '迭代次数', ylab = '平均总正确比例')
+
+plot(colnames(tp_eachcorrects), apply(tp_eachcorrects, 2, mean, na.rm = TRUE), type = 'b', xlab = '类别', ylab = '不同训练比列的平均正确率')
