@@ -1,3 +1,2 @@
 # R
 R in data analysis
-> I've had a few questions from users about expected mean squares and error terms in GLM. In particular, with a two way design with A fixed and B random, many people are expecting to see the A term tested against A*B and B tested against the within cells term. In the model used by GLM, the interaction term is automatically assumed to be random, expected mean squares are calculated using Hartley's method of synthesis, and the results are not as many people are used to seeing. In this case, both A and B are tested against A*B. Here's some information that people may find useful.
